@@ -1,0 +1,36 @@
+.settings-container {
+    @apply max-w-4xl mx-auto p-4 md:p-10;
+}
+
+.settings-header {
+    @apply mb-12 flex items-center gap-3 mb-4;
+}
+
+.settings-card {
+    @apply bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-xl shadow-slate-200/50 hover:shadow-2xl transition-all duration-300;
+}
+
+.settings-preference-item {
+    @apply flex justify-between items-center p-4 bg-slate-50 rounded-2xl hover:bg-slate-100 transition-colors;
+}
+
+.settings-toggle {
+    @apply w-14 h-8 bg-slate-200 rounded-full transition-all relative;
+}
+
+.settings-toggle::after {
+    content: '';
+    @apply absolute top-[4px] left-[4px] bg-white border-slate-200 border rounded-full h-6 w-6 transition-all;
+}
+
+.peer:checked~.settings-toggle {
+    @apply bg-money;
+}
+
+.peer:checked~.settings-toggle::after {
+    @apply translate-x-6 border-white;
+}
+
+.peer:focus~.settings-toggle {
+    @apply ring-4 ring-money/10;
+}

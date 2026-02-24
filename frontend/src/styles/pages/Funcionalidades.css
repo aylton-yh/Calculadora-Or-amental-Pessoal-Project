@@ -1,0 +1,11 @@
+.features-hero {
+    @apply pt-20 pb-16 px-6 text-center max-w-4xl mx-auto;
+}
+
+.features-grid {
+    @apply max-w-7xl mx-auto px-6 grid md:grid-cols-2 lg:grid-cols-3 gap-8;
+}
+
+.features-cta-section {
+    @apply mt-24 p-12 bg-gradient-to-br from-trust via-trust-dark to-black rounded-[3rem] text-center text-white shadow-2xl shadow-money/20 relative overflow-hidden;
+}
