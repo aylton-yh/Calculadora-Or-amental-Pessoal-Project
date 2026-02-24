@@ -1,0 +1,24 @@
+.hero-pattern {
+    background-image: radial-gradient(circle at 2px 2px, #e2e8f0 1px, transparent 0);
+    background-size: 40px 40px;
+}
+
+.text-reveal {
+    background: linear-gradient(135deg, #10b981 0%, #0f172a 50%, #000000 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    filter: drop-shadow(0 4px 12px rgba(16, 185, 129, 0.4));
+}
+
+.floating-icon-container {
+    @apply absolute inset-0 overflow-hidden pointer-events-none z-0;
+}
+
+.landing-header {
+    @apply pt-48 pb-32 px-6 text-center max-w-5xl mx-auto relative z-10;
+}
+
+.landing-hero-badge {
+    @apply inline-block px-6 py-2 rounded-full bg-money/10 text-money font-black text-xs md:text-sm mb-10 border border-money/20 backdrop-blur-md uppercase tracking-widest shadow-sm;
+}

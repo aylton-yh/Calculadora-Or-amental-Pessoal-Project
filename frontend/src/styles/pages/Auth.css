@@ -1,0 +1,29 @@
+.auth-container {
+    @apply min-h-screen flex items-center justify-center p-6 bg-slate-50;
+    background-image:
+        radial-gradient(at 0% 0%, hsla(158, 86%, 45%, 0.05) 0px, transparent 50%),
+        radial-gradient(at 100% 0%, hsla(45, 93%, 47%, 0.05) 0px, transparent 50%);
+}
+
+.auth-card {
+    @apply w-full max-w-md bg-white p-10 rounded-[2.5rem] shadow-2xl relative overflow-hidden;
+    border: 1px solid rgba(255, 255, 255, 0.8);
+}
+
+.auth-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 6px;
+    background: linear-gradient(to right, #10b981, #0f172a, #000000);
+}
+
+.auth-title {
+    @apply text-4xl font-black text-trust mb-2;
+}
+
+.register-card {
+    @apply w-full max-w-2xl bg-white p-8 md:p-12 rounded-[3rem] shadow-2xl relative overflow-hidden;
+}
