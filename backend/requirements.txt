@@ -1,8 +1,0 @@
-fastapi
-uvicorn
-sqlalchemy
-pydantic
-python-multipart
-pyjwt
-passlib[bcrypt]
-python-dotenv

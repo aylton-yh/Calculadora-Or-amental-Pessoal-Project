@@ -3,120 +3,46 @@
 @tailwind utilities;
 
 @layer base {
+
+    /* ── Tema Padrão: Elite Dark ── */
     :root {
-        --money-primary: #10B981;
-        --money-dark: #059669;
-        --money-light: #22c55e;
-        --dark-blue: #0f172a;
-        --black: #000000;
-        --dark-bg: #000000;
+        --primary: #10B981;
+        --primary-dark: #059669;
+        --secondary: #6366f1;
+        --bg-main: #020617;
+        --bg-card: rgba(15, 23, 42, 0.6);
+        --bg-sidebar: #0f172a;
+        --border-glass: rgba(255, 255, 255, 0.05);
+        --text-main: #f8fafc;
+        --text-muted: #94a3b8;
     }
 
     body {
-        @apply bg-trust-dark text-slate-200 antialiased font-sans;
+        background-color: var(--bg-main);
+        color: var(--text-main);
+        @apply antialiased font-sans overflow-x-hidden;
     }
+
 }
+
+
 
 @layer components {
-    .money-gradient {
-        @apply bg-gradient-to-r from-emerald-500 via-trust to-black;
-    }
-
     .glass-card {
-        @apply bg-white/70 backdrop-blur-xl border border-white/20 shadow-xl;
+        @apply bg-slate-900/40 backdrop-blur-xl border border-white/5 shadow-2xl;
     }
 
-    .input-premium {
-        @apply w-full px-4 py-3 bg-white/50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/50 transition-all font-medium placeholder:text-slate-400;
+    .premium-input {
+        @apply w-full px-4 py-3 bg-slate-800/40 border border-white/10 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all font-medium text-slate-200 placeholder:text-slate-500;
     }
 
-    .btn-premium {
-        @apply px-6 py-3 bg-emerald-600 text-white font-bold rounded-xl shadow-lg shadow-emerald-500/30 hover:shadow-emerald-500/50 hover:-translate-y-0.5 transition-all active:scale-95;
+    .money-gradient {
+        @apply bg-gradient-to-br from-emerald-500 to-emerald-700;
     }
-}
 
-/* Sanity Check - If you see a light background, CSS is loading */
-body {
-    background-color: #020617;
-    color: #e2e8f0;
-    -webkit-font-smoothing: antialiased;
-}
-
-/* Premium Utilities */
-.glass {
-    background: rgba(255, 255, 255, 0.7);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-}
-
-.text-reveal {
-    background: linear-gradient(135deg, #10b981 0%, #0f172a 50%, #000000 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    filter: drop-shadow(0 4px 12px rgba(16, 185, 129, 0.4));
-}
-
-.money-gradient {
-    background: linear-gradient(135deg, #10b981 0%, #0f172a 50%, #000000 100%);
-    color: white;
-}
-
-.secondary-gradient {
-    background: linear-gradient(90deg, #0f172a 0%, #1e293b 50%, #000000 100%);
-    color: white;
-}
-
-.premium-card {
-    background: rgba(255, 255, 255, 0.7);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    padding: 1.5rem;
-    border-radius: 1.5rem;
-    transition: all 0.3s ease;
-}
-
-.premium-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
-}
-
-.input-premium {
-    width: 100%;
-    padding: 0.75rem 1.25rem;
-    border-radius: 1rem;
-    border: 2px solid #f1f5f9;
-    outline: none;
-    transition: all 0.2s ease;
-}
-
-.input-premium:focus {
-    border-color: #059669;
-    box-shadow: 0 0 0 4px rgba(5, 150, 105, 0.1);
-}
-
-
-
-.shimmer {
-    position: relative;
-    overflow: hidden;
-}
-
-.shimmer::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    transform: translateX(-100%);
-    background: linear-gradient(90deg,
-            rgba(255, 255, 255, 0) 0,
-            rgba(255, 255, 255, 0.2) 20%,
-            rgba(255, 255, 255, 0.5) 60%,
-            rgba(255, 255, 255, 0));
-    animation: shimmer 2.5s infinite;
+    .shimmer {
+        @apply relative overflow-hidden before:absolute before:inset-0 before:-translate-x-full before:animate-[shimmer_2s_infinite] before:bg-gradient-to-r before:from-transparent before:via-white/10 before:to-transparent;
+    }
 }
 
 @keyframes shimmer {
@@ -125,35 +51,46 @@ body {
     }
 }
 
-.floating-money {
-    animation: float-money 6s ease-in-out infinite;
+/* Sidebar Custom Scrollbar */
+.sidebar-scroll::-webkit-scrollbar {
+    width: 4px;
 }
 
-@keyframes float-money {
+.sidebar-scroll::-webkit-scrollbar-track {
+    background: transparent;
+}
 
-    0%,
-    100% {
-        transform: translateY(0) rotate(0);
+.sidebar-scroll::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    @apply rounded-full;
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
     }
 
-    50% {
-        transform: translateY(-10px) rotate(5deg);
+    to {
+        opacity: 1;
+        transform: translateY(0);
     }
 }
 
-::-webkit-scrollbar {
-    width: 8px;
+.animate-fade-in {
+    animation: fadeIn 0.5s ease-out forwards;
 }
 
-::-webkit-scrollbar-track {
-    background: #f1f5f9;
+/* Layout Grid */
+.main-layout {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    min-height: 100 screen;
 }
 
-::-webkit-scrollbar-thumb {
-    background: #cbd5e1;
-    border-radius: 10px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-    background: #94a3b8;
+@media (max-width: 768px) {
+    .main-layout {
+        grid-template-columns: 1fr;
+    }
 }

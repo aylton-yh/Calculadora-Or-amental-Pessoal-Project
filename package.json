@@ -2,13 +2,11 @@
   "name": "real-balance",
   "version": "1.0.0",
   "scripts": {
-    "start": "concurrently \"npm run backend\" \"npm run frontend\"",
-    "backend": "cd server && node index.js",
+    "start": "npm run frontend",
     "frontend": "cd frontend && npm run dev",
-    "install-all": "npm install && cd frontend && npm install && cd ../server && npm install"
+    "install-all": "call \"C:\\Program Files\\nodejs\\npm.cmd\" install && cd frontend && call \"C:\\Program Files\\nodejs\\npm.cmd\" install"
   },
   "dependencies": {
-    "@dotenvx/dotenvx-ops": "^0.30.3",
     "concurrently": "^8.2.2"
   }
 }
