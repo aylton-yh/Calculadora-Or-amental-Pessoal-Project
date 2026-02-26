@@ -1,6 +1,10 @@
-export const formatCurrency = (amount, currency = 'AOA') => {
-    const symbol = currency === 'USD' ? '$' : 'Kz';
-    return `${symbol} ${parseFloat(amount).toLocaleString('pt-AO', { minimumFractionDigits: 2 })}`;
+export const formatCurrency = (amount) => {
+    const value = amount ?? 0;
+    const formatted = parseFloat(value).toLocaleString('pt-PT', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    });
+    return `${formatted} Kz`;
 };
 
 export const formatDate = (dateString) => {

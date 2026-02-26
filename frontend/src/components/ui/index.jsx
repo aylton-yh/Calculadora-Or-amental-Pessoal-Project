@@ -1,12 +1,12 @@
 import React from 'react';
 
 export const Button = ({ children, className = '', variant = 'primary', ...props }) => {
-    const baseStyles = 'px-6 py-2.5 rounded-xl font-black transition-all active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2';
+    const baseStyles = 'px-6 py-2.5 rounded-xl font-bold transition-all active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2 text-sm';
     const variants = {
-        primary: 'money-gradient text-white shadow-lg shadow-money/20 hover:shadow-money/30 border-none',
-        secondary: 'bg-trust text-white hover:bg-trust-dark shadow-sm border-none',
-        outline: 'border-2 border-trust/10 text-trust hover:bg-slate-50',
-        ghost: 'text-slate-500 hover:bg-slate-50 hover:text-trust'
+        primary: 'money-gradient text-white shadow-xl shadow-emerald-500/10 hover:shadow-emerald-500/20 border-none',
+        secondary: 'bg-slate-800 text-slate-200 hover:bg-slate-700 shadow-sm border border-white/5',
+        outline: 'border border-white/10 text-slate-300 hover:bg-white/5 hover:text-white',
+        ghost: 'text-slate-400 hover:bg-white/5 hover:text-slate-200'
     };
 
     return (
@@ -17,16 +17,16 @@ export const Button = ({ children, className = '', variant = 'primary', ...props
 };
 
 export const Input = ({ label, icon, className = '', ...props }) => (
-    <div className="flex flex-col gap-2 w-full text-trust">
-        {label && <label className="text-sm font-bold text-trust ml-1">{label}</label>}
-        <div className="relative flex items-center">
+    <div className="flex flex-col gap-1.5 w-full">
+        {label && <label className="text-[11px] font-black uppercase tracking-widest text-slate-500 ml-1">{label}</label>}
+        <div className="relative flex items-center group">
             {icon && (
-                <div className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-money transition-colors pointer-events-none z-10">
-                    {React.cloneElement(icon, { size: 20 })}
+                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-emerald-500 transition-colors pointer-events-none z-10">
+                    {React.cloneElement(icon, { size: 18 })}
                 </div>
             )}
             <input
-                className={`w-full px-5 py-4 bg-white border-2 border-slate-100 rounded-2xl focus:ring-4 focus:ring-money/10 focus:border-money focus:outline-none transition-all placeholder:text-slate-300 font-bold ${icon ? 'pl-14' : ''} ${className}`}
+                className={`premium-input ${icon ? 'pl-11' : ''} ${className}`}
                 {...props}
             />
         </div>
@@ -34,29 +34,29 @@ export const Input = ({ label, icon, className = '', ...props }) => (
 );
 
 export const Select = ({ label, icon, children, className = '', ...props }) => (
-    <div className="flex flex-col gap-2 w-full text-trust font-bold">
-        {label && <label className="text-sm font-bold text-trust ml-1">{label}</label>}
-        <div className="relative flex items-center">
+    <div className="flex flex-col gap-1.5 w-full">
+        {label && <label className="text-[11px] font-black uppercase tracking-widest text-slate-500 ml-1">{label}</label>}
+        <div className="relative flex items-center group">
             {icon && (
-                <div className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-money transition-colors pointer-events-none z-10">
-                    {React.cloneElement(icon, { size: 20 })}
+                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-emerald-500 transition-colors pointer-events-none z-10">
+                    {React.cloneElement(icon, { size: 18 })}
                 </div>
             )}
             <select
-                className={`w-full pl-14 pr-10 py-4 bg-white border-2 border-slate-100 rounded-2xl focus:ring-4 focus:ring-money/10 focus:border-money focus:outline-none transition-all appearance-none cursor-pointer ${className}`}
+                className={`premium-input ${icon ? 'pl-11' : ''} pr-10 appearance-none cursor-pointer ${className}`}
                 {...props}
             >
                 {children}
             </select>
-            <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6" /></svg>
+            <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-500">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6" /></svg>
             </div>
         </div>
     </div>
 );
 
-export const Card = ({ children, className = '' }) => (
-    <div className={`bg-white p-8 rounded-[2rem] shadow-xl border border-slate-50 ${className}`}>
+export const Card = ({ children, className = '', ...props }) => (
+    <div className={`glass-card p-6 rounded-2xl ${className}`} {...props}>
         {children}
     </div>
 );
