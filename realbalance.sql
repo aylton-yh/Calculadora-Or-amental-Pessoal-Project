@@ -15,7 +15,7 @@ CREATE TABLE `usuario` (
   `BI` varchar(50) NOT NULL UNIQUE,
   `endereço` varchar(255) NOT NULL,
   `palavra_passe` varchar(255) NOT NULL COMMENT 'Stored as bcrypt hash in production',
-  `foto_perfil` varchar(255) DEFAULT NULL,
+  `foto_perfil` LONGTEXT DEFAULT NULL,
   `moeda_padrao` varchar(10) DEFAULT 'Kz' COMMENT 'Fixed: Kwanza (AOA) is the only currency',
   `idioma` varchar(10) DEFAULT 'pt-AO' COMMENT 'Fixed: Português de Angola is the only language',
   `tema_sistema` enum('dark', 'light', 'midnight', 'ocean', 'forest') DEFAULT 'dark' COMMENT 'UI theme chosen by user',

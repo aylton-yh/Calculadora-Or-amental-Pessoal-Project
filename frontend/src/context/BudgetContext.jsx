@@ -25,10 +25,11 @@ export const BudgetProvider = ({ children }) => {
     const [loading, setLoading] = useState(false);
 
     // Sistema de actividades globais (log de tudo que acontece no sistema)
-    const [activities, setActivities] = useState(() => safeParse('rb_activities', []));
+    // moved to server so that each user sees only their own activities.
+    const [activities, setActivities] = useState([]);
 
     // Registar uma actividade no log global
-    const logActivity = useCallback((descricao, tipo = 'sistema', tela = 'Sistema', extra = {}) => {
+    const logActivity = useCallback(async (descricao, tipo = 'sistema', tela = 'Sistema', extra = {}) => {
         const newActivity = {
             id: Date.now(),
             descricao,
@@ -37,12 +38,24 @@ export const BudgetProvider = ({ children }) => {
             data: new Date().toISOString(),
             ...extra,
         };
-        setActivities(prev => {
-            const updated = [newActivity, ...prev].slice(0, 500); // max 500 entradas
-            localStorage.setItem('rb_activities', JSON.stringify(updated));
-            return updated;
-        });
-    }, []);
+        // update local state immediately for snappy UI
+        setActivities(prev => [newActivity, ...prev].slice(0, 500));
+
+        // also send to server if logged in
+        if (user?.id) {
+            try {
+                await api.post('/finance/activities', {
+                    descricao,
+                    tipo,
+                    tela,
+                    valor: extra.valor,
+                    referencia_id: extra.referencia_id
+                });
+            } catch (err) {
+                console.error('Failed to log activity on server', err);
+            }
+        }
+    }, [user]);
 
     const normalizeUser = (userData) => {
         if (!userData) return null;
@@ -76,47 +89,28 @@ export const BudgetProvider = ({ children }) => {
     const login = (userData, token) => {
         const normalized = normalizeUser(userData);
         if (token) localStorage.setItem('token', token);
-        
+
         try {
             localStorage.setItem('user', JSON.stringify(normalized));
         } catch (e) {
             console.error('Falha ao guardar usuário no localStorage (provavelmente foto muito grande):', e);
             // Se falhar o localStorage, ainda assim atualizamos o estado em memória
         }
-        
+
         setUser(normalized);
 
         if (token) {
-            // Registar login como actividade somente se houver token (novo login)
-            const loginAct = {
-                id: Date.now(),
-                descricao: `Login efectuado por ${normalized?.name || normalized?.username || 'Usuário'}`,
-                tipo: 'login',
-                tela: 'Login',
-                data: new Date().toISOString(),
-            };
-            setActivities(prev => {
-                const updated = [loginAct, ...prev].slice(0, 500);
-                localStorage.setItem('rb_activities', JSON.stringify(updated));
-                return updated;
-            });
+            // record login activity via common helper which handles server
+            // ensure user state has updated before logActivity tries to send to API
+            setTimeout(() => {
+                logActivity(`Login efectuado por ${normalized?.name || normalized?.username || 'Usuário'}`, 'login', 'Login');
+            }, 0);
         }
     };
 
     const logout = () => {
         if (user) {
-            const logoutAct = {
-                id: Date.now(),
-                descricao: `Sessão encerrada por ${user.name || user.username}`,
-                tipo: 'sistema',
-                tela: 'Sistema',
-                data: new Date().toISOString(),
-            };
-            setActivities(prev => {
-                const updated = [logoutAct, ...prev].slice(0, 500);
-                localStorage.setItem('rb_activities', JSON.stringify(updated));
-                return updated;
-            });
+            logActivity(`Sessão encerrada por ${user.name || user.username}`, 'sistema', 'Sistema');
         }
         localStorage.removeItem('token');
         localStorage.removeItem('user');
@@ -133,15 +127,17 @@ export const BudgetProvider = ({ children }) => {
         if (!user) return;
         setLoading(true);
         try {
-            const [transRes, catRes, accRes, statsRes] = await Promise.all([
+            const [transRes, catRes, accRes, statsRes, actRes] = await Promise.all([
                 api.get('/finance/transactions'),
                 api.get('/finance/categories'),
                 api.get('/finance/accounts'),
-                api.get('/finance/stats')
+                api.get('/finance/stats'),
+                api.get('/finance/activities')
             ]);
             setTransactions(transRes.data);
             setCategories(catRes.data);
             setAccounts(accRes.data.map(normalizeAccount));
+            setActivities(actRes.data || []);
 
             setBalance({
                 balance: statsRes.data.total_balance || 0,
@@ -158,6 +154,28 @@ export const BudgetProvider = ({ children }) => {
     };
 
     // Aplicar tema ao documento sempre que o utilizador mudar
+
+    // when user signs in/out, refresh activities list
+    useEffect(() => {
+        if (user) {
+            // drop any stale local activities from previous sessions
+            try { localStorage.removeItem('rb_activities'); } catch { }
+            fetchData(); // fetchData now also grabs activities
+        } else {
+            setActivities([]);
+        }
+    }, [user]);
+
+    // clear all activities for the current user (server + state)
+    const clearActivities = async () => {
+        if (!user) return;
+        try {
+            await api.delete('/finance/activities');
+            setActivities([]);
+        } catch (err) {
+            console.error('Failed to clear activities', err);
+        }
+    };
 
     const addTransaction = async (data) => {
         setLoading(true);
@@ -204,9 +222,10 @@ export const BudgetProvider = ({ children }) => {
     };
 
     const addCategory = async (data) => {
-        // Optimistic UI: Add category immediately to state
+        // Optimistic UI
         const tempId = Date.now();
-        const newCat = { id_categoria: tempId, ...data };
+        const idField = data.tipo === 'receita' ? 'id_categoria_receita' : 'id_categoria_despesa';
+        const newCat = { [idField]: tempId, ...data };
 
         setCategories(prev => [...prev, newCat]);
 
@@ -214,13 +233,13 @@ export const BudgetProvider = ({ children }) => {
             const res = await api.post('/finance/categories', data);
             // Replace temporary category with real one from server
             setCategories(prev => prev.map(cat =>
-                cat.id_categoria === tempId ? res.data : cat
+                cat[idField] === tempId ? res.data : cat
             ));
             return { success: true };
         } catch (err) {
             console.error('Erro ao adicionar categoria', err);
             // Rollback on error
-            setCategories(prev => prev.filter(cat => cat.id_categoria !== tempId));
+            setCategories(prev => prev.filter(cat => cat[idField] !== tempId));
             return {
                 success: false,
                 message: err.response?.data?.message || 'Erro ao comunicar com o servidor. Verifique a sua ligação.'
@@ -234,7 +253,7 @@ export const BudgetProvider = ({ children }) => {
             transactions, categories, balance,
             accounts, setAccounts, updateAccountBalance,
             loading, fetchData,
-            activities, logActivity,
+            activities, logActivity, clearActivities,
             updatePreferences, addTransaction, deleteTransaction,
             addCategory
         }}>

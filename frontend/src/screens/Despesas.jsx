@@ -239,7 +239,7 @@ const Despesas = () => {
                                             >
                                                 <option value="" className="bg-slate-900">Selecionar...</option>
                                                 {categories.map(cat => (
-                                                    <option key={cat.id_categoria} value={cat.id_categoria} className="bg-slate-900">{cat.nome}</option>
+                                                    <option key={cat.id_categoria_despesa} value={cat.id_categoria_despesa} className="bg-slate-900">{cat.nome}</option>
                                                 ))}
                                             </select>
                                         </div>
@@ -301,7 +301,7 @@ const Despesas = () => {
                                     </div>
 
                                     <button
-                                        onClick={() => handleDeleteCategory(cat.id_categoria)}
+                                        onClick={() => handleDeleteCategory(cat.id_categoria_despesa)}
                                         className="w-8 h-8 rounded-lg bg-red-500/0 text-red-500/0 group-hover:bg-red-500/10 group-hover:text-red-500 transition-all flex items-center justify-center"
                                         title="Eliminar categoria"
                                     >
