@@ -10,7 +10,8 @@ import {
     LogIn,
     Settings,
     CreditCard,
-    Activity
+    Activity,
+    Trash2
 } from 'lucide-react';
 import { formatCurrency, formatDate } from '../utils/formatters';
 import { useUI } from '../context/UIContext';
@@ -45,8 +46,9 @@ const getActivityColor = (tipo) => {
 };
 
 const Painel = () => {
-    const { user, balance, transactions, categories, accounts, logout, activities } = useBudget();
+    const { user, balance, transactions, categories, accounts, logout, activities, clearActivities } = useBudget();
     const { startProcessing, stopProcessing } = useUI();
+    const [selectedChartYear, setSelectedChartYear] = React.useState(new Date().getFullYear());
 
     const currentMonth = new Date().getMonth() + 1;
     const currentYear = new Date().getFullYear();
@@ -89,13 +91,14 @@ const Painel = () => {
         return acc;
     }, {});
 
-    // Processar dados para o gráfico (últimos 6 meses)
+    // Processar dados para o gráfico (Janeiro a Dezembro do ano selecionado, apenas a partir da criação do utilizador)
     const getChartData = () => {
         const months = [];
-        const now = new Date();
+        const userCreatedAt = user?.created_at ? new Date(user.created_at) : new Date();
 
-        for (let i = 5; i >= 0; i--) {
-            const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+        // Gerar todos os meses de janeiro a dezembro do ano selecionado
+        for (let i = 0; i < 12; i++) {
+            const d = new Date(selectedChartYear, i, 1);
             months.push({
                 month: d.getMonth() + 1,
                 year: d.getFullYear(),
@@ -103,11 +106,27 @@ const Painel = () => {
             });
         }
 
-        // Calcular totais por mês
-        let currentBalance = totalEmContas;
+        // Filtrar transações apenas a partir da criação do utilizador
+        const validTransactions = transactions.filter(t => {
+            const tDate = new Date(t.data);
+            return tDate >= userCreatedAt;
+        });
+
+        // Calcular saldo inicial: 0 se o utilizador foi criado neste ano, caso contrário começar com o saldo atual
+        const userCreatedInSelectedYear = userCreatedAt.getFullYear() === selectedChartYear;
+        let computedBalance = userCreatedInSelectedYear ? 0 : totalEmContas;
+
+        // Se o ano selecionado é anterior ao ano atual e o utilizador foi criado depois, ignorar
+        if (selectedChartYear < currentYear && !userCreatedInSelectedYear) {
+            computedBalance = 0;
+        }
+
         const data = months.map(m => {
-            const monthTransactions = transactions.filter(t => {
+            const monthTransactions = validTransactions.filter(t => {
                 const tDate = new Date(t.data);
+                // Apenas contar se o mês/ano é >= à data de criação do utilizador
+                if (tDate.getFullYear() < selectedChartYear) return false;
+                if (tDate.getFullYear() === selectedChartYear && (tDate.getMonth() + 1) < m.month) return false;
                 return (tDate.getMonth() + 1) === m.month && tDate.getFullYear() === m.year;
             });
 
@@ -129,11 +148,11 @@ const Painel = () => {
             };
         });
 
-        // Ajustar patrimônio retroactivamente a partir do saldo actual
-        // O último mês no array 'data' é o mês actual.
-        for (let i = data.length - 1; i >= 0; i--) {
-            data[i].patrimonio = currentBalance;
-            currentBalance -= data[i].net;
+        // Calcular patrimônio progressivamente do início (janeiro) para o fim (dezembro)
+        let runningBalance = computedBalance;
+        for (let i = 0; i < data.length; i++) {
+            data[i].patrimonio = runningBalance;
+            runningBalance += data[i].net;
         }
 
         return data;
@@ -165,11 +184,20 @@ const Painel = () => {
 
             {/* Gráfico de Evolução Financeira */}
             <div className="space-y-6">
-                <div className="flex justify-between items-center px-1">
+                <div className="flex justify-between items-center px-1 flex-wrap gap-4">
                     <h2 className="text-xl font-black text-white flex items-center gap-2">
                         <div className="w-1 h-6 bg-secondary rounded-full"></div>
                         Evolução Patrimonial (Entradas vs Saídas)
                     </h2>
+                    <div className="flex items-center gap-2 bg-slate-900/60 p-1.5 rounded-2xl border border-white/5">
+                        <select
+                            value={selectedChartYear}
+                            onChange={(e) => setSelectedChartYear(parseInt(e.target.value))}
+                            className="bg-transparent text-xs font-black text-slate-300 px-3 py-2 outline-none cursor-pointer hover:text-emerald-500 transition-colors uppercase tracking-widest"
+                        >
+                            {[2024, 2025, 2026].map(year => <option key={year} value={year} className="bg-slate-900">{year}</option>)}
+                        </select>
+                    </div>
                 </div>
                 <Card className="bg-slate-900/40 border-white/5 p-8 h-[400px]">
                     <ResponsiveContainer width="100%" height="100%">
@@ -222,6 +250,19 @@ const Painel = () => {
                             <div className="w-1 h-6 bg-emerald-500 rounded-full"></div>
                             Actividades recentes
                         </h2>
+                        {activities.length > 0 && (
+                            <button
+                                onClick={() => {
+                                    if (window.confirm('Limpar todas as actividades?')) {
+                                        clearActivities();
+                                    }
+                                }}
+                                className="text-slate-400 hover:text-red-400 transition-colors ml-2"
+                                title="Limpar actividades"
+                            >
+                                <Trash2 size={16} />
+                            </button>
+                        )}
                     </div>
 
                     <Card className="!p-0 overflow-hidden border-white/5 bg-slate-900/40">

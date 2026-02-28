@@ -97,8 +97,8 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
                     </div>
                     {!collapsed && (
                         <div className="flex-1 min-w-0">
-                            <p className="text-sm font-bold text-white truncate">{user?.nome_completo}</p>
-                            <p className="text-[10px] text-slate-500 truncate">@{user?.nome_usuario || 'usuário'}</p>
+                            <p className="text-sm font-bold text-white truncate">{user?.name}</p>
+                            <p className="text-[10px] text-slate-500 truncate">@{user?.username || 'usuário'}</p>
                         </div>
                     )}
                 </div>

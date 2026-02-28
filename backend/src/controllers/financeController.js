@@ -26,8 +26,12 @@ export const createAccount = async (req, res) => {
 // --- Categories ---
 export const getCategories = async (req, res) => {
     try {
-        const [rows] = await pool.query('SELECT * FROM categoria WHERE id_usuario = ? OR id_usuario IS NULL', [req.user.id]);
-        res.json(rows);
+        const [receitas] = await pool.query('SELECT *, \'receita\' as tipo FROM categoria_receita WHERE id_usuario = ? OR id_usuario IS NULL', [req.user.id]);
+        const [despesas] = await pool.query('SELECT *, \'despesa\' as tipo FROM categoria_despesa WHERE id_usuario = ? OR id_usuario IS NULL', [req.user.id]);
+
+        // Return a combined list to maintain frontend compatibility if needed, 
+        // but now specifically marked by table origins if necessary.
+        res.json([...receitas, ...despesas]);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -35,12 +39,15 @@ export const getCategories = async (req, res) => {
 
 export const createCategory = async (req, res) => {
     const { nome, icone, cor, tipo } = req.body;
+    const table = tipo === 'receita' ? 'categoria_receita' : 'categoria_despesa';
+    const idField = tipo === 'receita' ? 'id_categoria_receita' : 'id_categoria_despesa';
+
     try {
         const [result] = await pool.query(
-            'INSERT INTO categoria (nome, icone, cor, tipo, id_usuario) VALUES (?, ?, ?, ?, ?)',
-            [nome, icone, cor, tipo, req.user.id]
+            `INSERT INTO ${table} (nome, icone, cor, id_usuario) VALUES (?, ?, ?, ?)`,
+            [nome, icone, cor, req.user.id]
         );
-        res.status(201).json({ id_categoria: result.insertId, ...req.body });
+        res.status(201).json({ [idField]: result.insertId, ...req.body });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -50,10 +57,24 @@ export const createCategory = async (req, res) => {
 export const getTransactions = async (req, res) => {
     try {
         const [rows] = await pool.query(
-            'SELECT t.*, c.nome as categoria_nome FROM transacoes t LEFT JOIN categoria c ON t.id_categoria = c.id_categoria WHERE t.id_usuario = ? ORDER BY t.data DESC',
+            `SELECT t.*, 
+                    cr.nome as categoria_receita_nome, 
+                    cd.nome as categoria_despesa_nome 
+             FROM transacoes t 
+             LEFT JOIN categoria_receita cr ON t.id_categoria_receita = cr.id_categoria_receita 
+             LEFT JOIN categoria_despesa cd ON t.id_categoria_despesa = cd.id_categoria_despesa 
+             WHERE t.id_usuario = ? ORDER BY t.data DESC`,
             [req.user.id]
         );
-        res.json(rows);
+
+        // Normalize for frontend: add a virtual 'categoria_nome'
+        const normalizedRows = rows.map(t => ({
+            ...t,
+            categoria_nome: t.tipo === 'receita' ? t.categoria_receita_nome : t.categoria_despesa_nome,
+            id_categoria: t.tipo === 'receita' ? t.id_categoria_receita : t.id_categoria_despesa
+        }));
+
+        res.json(normalizedRows);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -66,8 +87,10 @@ export const createTransaction = async (req, res) => {
     try {
         await connection.beginTransaction();
 
+        const catField = tipo === 'receita' ? 'id_categoria_receita' : 'id_categoria_despesa';
+
         const [result] = await connection.query(
-            'INSERT INTO transacoes (descricao, valor, data, tipo, metodo_pagamento, id_usuario, id_categoria, id_conta) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+            `INSERT INTO transacoes (descricao, valor, data, tipo, metodo_pagamento, id_usuario, ${catField}, id_conta) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
             [descricao, valor, data, tipo, metodo_pagamento, req.user.id, id_categoria, id_conta]
         );
 
@@ -97,7 +120,7 @@ export const createTransaction = async (req, res) => {
 export const getBudgets = async (req, res) => {
     try {
         const [rows] = await pool.query(
-            'SELECT o.*, c.nome as categoria_nome FROM orcamentos o JOIN categoria c ON o.id_categoria = c.id_categoria WHERE o.id_usuario = ?',
+            'SELECT o.*, c.nome as categoria_nome FROM orcamentos o JOIN categoria_despesa c ON o.id_categoria_despesa = c.id_categoria_despesa WHERE o.id_usuario = ?',
             [req.user.id]
         );
         res.json(rows);
@@ -109,11 +132,36 @@ export const getBudgets = async (req, res) => {
 // --- Activities ---
 export const getActivities = async (req, res) => {
     try {
+        // only return activities belonging to the authenticated user
         const [rows] = await pool.query(
             'SELECT * FROM actividades_sistema WHERE id_usuario = ? ORDER BY data DESC LIMIT 20',
             [req.user.id]
         );
         res.json(rows);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// generic endpoint to let the client register an arbitrary activity
+export const logActivity = async (req, res) => {
+    const { descricao, tipo = 'sistema', tela = 'Sistema', valor = null, referencia_id = null } = req.body;
+    try {
+        const [result] = await pool.query(
+            'INSERT INTO actividades_sistema (descricao, tipo, tela, valor, referencia_id, id_usuario) VALUES (?, ?, ?, ?, ?, ?)',
+            [descricao, tipo, tela, valor, referencia_id, req.user.id]
+        );
+        res.status(201).json({ id_actividade: result.insertId, descricao, tipo, tela, valor, referencia_id });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// allow user to clear their own activity log
+export const clearActivities = async (req, res) => {
+    try {
+        await pool.query('DELETE FROM actividades_sistema WHERE id_usuario = ?', [req.user.id]);
+        res.json({ success: true });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
