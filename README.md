@@ -1,4 +1,4 @@
-# 💎 Real Balance — Premium Financial Management 🚀
+# 💎 Real Balance🚀
 
 <div align="center">
   <img src="./docs/images/dashboard.png" alt="Real Balance Dashboard" width="100%" />
@@ -27,7 +27,7 @@ Diferente de sistemas básicos, o Real Balance utiliza uma separação lógica r
 Visualize o seu património total, receitas e despesas mensais num relance. Nossos gráficos dinâmicos mostram a evolução do seu capital ao longo do tempo.
 
 ### 💳 Gestão de Multicaixas & Carteiras
-Controle múltiplas contas bancárias (BFA, BAI, Sol, etc.), cartões Multicaixa e dinheiro vivo. Saldos sincronizados instantaneamente a cada transação.
+Controle múltiplas contas bancárias (BFA, BAI, Sol, etc.), cartões Multicaixa e dinheiro vivo.
 
 ### 📑 Relatórios Profissionais
 Gere relatórios detalhados em **PDF** ou **Excel**. O sistema mantém um histórico dos relatórios gerados para que você possa consultar estados passados do seu património a qualquer momento.
